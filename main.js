@@ -138,9 +138,7 @@ function renderHaeunInfo(type, haeunObj) {
     document.getElementById(`${type}HaeunSection`).classList.remove('hidden');
 }
 
-// 카드 갤러리 렌더링 (모든 카드 0-21)
-let currentCardIndex = 0;
-let cardGalleryNumbers = [];
+// 카드 갤러리 렌더링 (그리드 방식)
 let isCardGalleryInitialized = false;
 
 function renderCardGallery() {
@@ -150,152 +148,81 @@ function renderCardGallery() {
         return;
     }
 
-    // 0부터 21까지 모든 카드
-    cardGalleryNumbers = Array.from({ length: 22 }, (_, i) => i);
-    const cardGallery = document.getElementById('cardGallery');
-    const cardIndicators = document.getElementById('cardIndicators');
+    const cardGrid = document.getElementById('cardGrid');
+    cardGrid.innerHTML = '';
 
-    cardGallery.innerHTML = '';
-    cardIndicators.innerHTML = '';
-    currentCardIndex = 0;
-
-    // 카드 생성
-    cardGalleryNumbers.forEach((num, index) => {
-        // 0번은 패딩 없이, 1-21번은 01-21로 패딩
+    // 0부터 21까지 모든 카드 생성
+    for (let num = 0; num <= 21; num++) {
         const paddedNum = num === 0 ? '0' : String(num).padStart(2, '0');
         const frontPath = encodeURIComponent(`인생보감개운법카드-${paddedNum}_앞.png`);
-        const backPath = encodeURIComponent(`인생보감개운법카드-${paddedNum}_뒤.png`);
 
-        const card = document.createElement('div');
-        card.className = `saju-card ${index === 0 ? 'active' : ''}`;
-        card.dataset.index = index;
+        const gridItem = document.createElement('div');
+        gridItem.className = 'card-grid-item';
+        gridItem.dataset.number = num;
 
-        card.innerHTML = `
-            <div class="card-face card-front">
-                <img src="/${frontPath}" alt="사주 카드 ${num}번 앞면" loading="lazy">
-            </div>
-            <div class="card-face card-back">
-                <img src="/${backPath}" alt="사주 카드 ${num}번 뒷면" loading="lazy">
-            </div>
+        gridItem.innerHTML = `
+            <img src="/${frontPath}" alt="사주 카드 ${num}번" loading="lazy">
         `;
 
-        // 카드 클릭 시 플립
-        card.addEventListener('click', () => {
-            card.classList.toggle('flipped');
+        // 클릭 시 모달 열기
+        gridItem.addEventListener('click', () => {
+            openCardModal(num);
         });
 
-        cardGallery.appendChild(card);
-
-        // 인디케이터 생성
-        const indicator = document.createElement('div');
-        indicator.className = `indicator ${index === 0 ? 'active' : ''}`;
-        indicator.dataset.index = index;
-        indicator.title = `${num}번 카드`;
-        indicator.addEventListener('click', () => {
-            goToCard(index);
-        });
-        cardIndicators.appendChild(indicator);
-    });
-
-    // 네비게이션 버튼 이벤트
-    if (!isCardGalleryInitialized) {
-        setupCardNavigation();
-        setupSwipeGesture();
+        cardGrid.appendChild(gridItem);
     }
 
-    // 현재 카드 번호 업데이트
-    updateCardNumberLabel();
+    // 모달 이벤트 설정
+    setupCardModal();
 
     isCardGalleryInitialized = true;
     cardGallerySection.classList.remove('hidden');
 }
 
-function updateCardNumberLabel() {
-    const currentNumber = cardGalleryNumbers[currentCardIndex];
-    const label = document.getElementById('currentCardNumber');
-    if (label) {
-        label.textContent = currentNumber;
-    }
+// 카드 모달 열기
+function openCardModal(num) {
+    const modal = document.getElementById('cardModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalFrontImg = document.getElementById('modalFrontImg');
+    const modalBackImg = document.getElementById('modalBackImg');
+
+    const paddedNum = num === 0 ? '0' : String(num).padStart(2, '0');
+    const frontPath = encodeURIComponent(`인생보감개운법카드-${paddedNum}_앞.png`);
+    const backPath = encodeURIComponent(`인생보감개운법카드-${paddedNum}_뒤.png`);
+
+    modalTitle.textContent = `사주 카드 ${num}번`;
+    modalFrontImg.src = `/${frontPath}`;
+    modalBackImg.src = `/${backPath}`;
+    modalFrontImg.alt = `${num}번 카드 앞면`;
+    modalBackImg.alt = `${num}번 카드 뒷면`;
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // 스크롤 방지
 }
 
-function goToCard(index) {
-    if (index < 0 || index >= cardGalleryNumbers.length) return;
-
-    const cards = document.querySelectorAll('.saju-card');
-    const indicators = document.querySelectorAll('.indicator');
-
-    // 현재 카드 비활성화
-    cards[currentCardIndex]?.classList.remove('active');
-    indicators[currentCardIndex]?.classList.remove('active');
-
-    // 새 카드 활성화
-    currentCardIndex = index;
-    cards[currentCardIndex].classList.add('active');
-    indicators[currentCardIndex].classList.add('active');
-
-    // 플립 상태 초기화
-    cards[currentCardIndex].classList.remove('flipped');
-
-    // 카드 번호 라벨 업데이트
-    updateCardNumberLabel();
+// 카드 모달 닫기
+function closeCardModal() {
+    const modal = document.getElementById('cardModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = ''; // 스크롤 복원
 }
 
-function setupCardNavigation() {
-    const prevBtn = document.getElementById('cardPrev');
-    const nextBtn = document.getElementById('cardNext');
+// 카드 모달 이벤트 설정
+function setupCardModal() {
+    const modal = document.getElementById('cardModal');
+    const modalClose = document.getElementById('modalClose');
+    const modalOverlay = document.getElementById('modalOverlay');
 
-    prevBtn.addEventListener('click', () => {
-        const newIndex = (currentCardIndex - 1 + cardGalleryNumbers.length) % cardGalleryNumbers.length;
-        goToCard(newIndex);
-    });
+    // 닫기 버튼
+    modalClose.addEventListener('click', closeCardModal);
 
-    nextBtn.addEventListener('click', () => {
-        const newIndex = (currentCardIndex + 1) % cardGalleryNumbers.length;
-        goToCard(newIndex);
-    });
-}
+    // 오버레이 클릭 시 닫기
+    modalOverlay.addEventListener('click', closeCardModal);
 
-function setupSwipeGesture() {
-    const cardGallery = document.getElementById('cardGallery');
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    cardGallery.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    cardGallery.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-    }, { passive: true });
-
-    function handleSwipe() {
-        const swipeThreshold = 50;
-        const diff = touchStartX - touchEndX;
-
-        if (Math.abs(diff) > swipeThreshold) {
-            if (diff > 0) {
-                // 왼쪽으로 스와이프 (다음 카드)
-                const newIndex = (currentCardIndex + 1) % cardGalleryNumbers.length;
-                goToCard(newIndex);
-            } else {
-                // 오른쪽으로 스와이프 (이전 카드)
-                const newIndex = (currentCardIndex - 1 + cardGalleryNumbers.length) % cardGalleryNumbers.length;
-                goToCard(newIndex);
-            }
-        }
-    }
-
-    // 키보드 네비게이션
+    // ESC 키로 닫기
     document.addEventListener('keydown', (e) => {
-        if (!cardGallerySection.classList.contains('hidden')) {
-            if (e.key === 'ArrowLeft') {
-                const newIndex = (currentCardIndex - 1 + cardGalleryNumbers.length) % cardGalleryNumbers.length;
-                goToCard(newIndex);
-            } else if (e.key === 'ArrowRight') {
-                const newIndex = (currentCardIndex + 1) % cardGalleryNumbers.length;
-                goToCard(newIndex);
-            }
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeCardModal();
         }
     });
 }

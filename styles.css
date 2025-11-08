@@ -137,6 +137,44 @@ main {
     font-size: 14px;
 }
 
+/* Checkbox Group */
+.checkbox-group {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #fbbf24;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.checkbox-label span {
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.privacy-text {
+    display: block;
+    margin-top: 8px;
+    margin-left: 30px;
+    color: #92400e;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
 .form-group input {
     width: 100%;
     padding: 12px 16px;
@@ -564,7 +602,7 @@ footer {
     opacity: 0.8;
 }
 
-/* Card Gallery */
+/* Card Gallery - Grid Style */
 .card-gallery-intro {
     text-align: center;
     font-size: 13px;
@@ -572,168 +610,150 @@ footer {
     margin-bottom: 20px;
 }
 
-.card-gallery-container {
-    position: relative;
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 0 50px;
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 12px;
+    margin-top: 20px;
 }
 
-.card-gallery {
-    width: 100%;
+.card-grid-item {
     aspect-ratio: 2.5 / 3.5;
-    position: relative;
+    border-radius: 8px;
     overflow: hidden;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-/* Card Flip Container */
-.saju-card {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
     cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
 }
 
-.saju-card.active {
-    opacity: 1;
-    pointer-events: auto;
+.card-grid-item:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-.saju-card.flipped {
-    transform: rotateY(180deg);
-}
-
-.card-face {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    border-radius: 16px;
-    overflow: hidden;
-}
-
-.card-face img {
+.card-grid-item img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
 
-.card-front {
-    transform: rotateY(0deg);
-}
-
-.card-back {
-    transform: rotateY(180deg);
-}
-
-/* Gallery Navigation */
-.gallery-nav {
+.card-grid-item::after {
+    content: attr(data-number);
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    border: none;
-    background: rgba(255, 255, 255, 0.9);
-    color: var(--primary-color);
-    font-size: 32px;
+    bottom: 4px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
     font-weight: 700;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 10;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Card Modal */
+.card-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: 1;
-    padding: 0;
+    padding: 20px;
 }
 
-.gallery-nav:hover {
-    background: var(--primary-color);
-    color: white;
-    transform: translateY(-50%) scale(1.1);
-}
-
-.gallery-nav:active {
-    transform: translateY(-50%) scale(0.95);
-}
-
-.gallery-nav-prev {
+.modal-overlay {
+    position: absolute;
+    top: 0;
     left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
 }
 
-.gallery-nav-next {
-    right: 0;
+.modal-content {
+    position: relative;
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
 }
 
-/* Card Indicators */
-.card-indicators {
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: var(--bg-color);
+    color: var(--text-primary);
+    font-size: 24px;
+    border-radius: 50%;
+    cursor: pointer;
     display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 8px;
-    margin-top: 20px;
-    padding: 10px;
-    flex-wrap: wrap;
+    transition: all 0.3s ease;
+    line-height: 1;
 }
 
-.card-number-label {
-    text-align: center;
-    font-size: 18px;
+.modal-close:hover {
+    background: var(--danger-color);
+    color: white;
+    transform: rotate(90deg);
+}
+
+.modal-content h3 {
+    font-size: 20px;
     font-weight: 700;
     color: var(--primary-color);
-    margin-top: 16px;
-    padding: 12px;
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.modal-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.modal-card-item {
+    text-align: center;
+}
+
+.modal-card-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.modal-card-item img {
+    width: 100%;
     border-radius: 12px;
-    border: 2px solid #bae6fd;
-}
-
-.card-number-label #currentCardNumber {
-    font-size: 24px;
-    font-weight: 900;
-    color: var(--secondary-color);
-}
-
-.indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--border-color);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.indicator.active {
-    background: var(--primary-color);
-    width: 24px;
-    border-radius: 4px;
-}
-
-.indicator:hover {
-    background: var(--secondary-color);
-}
-
-/* Swipe hint animation */
-@keyframes swipeHint {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(-10px); }
-}
-
-.card-gallery-container:hover .gallery-nav {
-    animation: swipeHint 2s ease-in-out infinite;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Hidden Class */
@@ -823,18 +843,26 @@ footer {
         padding: 1px 6px;
     }
 
-    .card-gallery-container {
-        padding: 0 40px;
+    .card-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 8px;
     }
 
-    .gallery-nav {
-        width: 36px;
-        height: 36px;
-        font-size: 28px;
+    .modal-cards {
+        grid-template-columns: 1fr;
     }
 
-    .card-gallery-intro {
-        font-size: 12px;
+    .modal-content {
+        padding: 20px;
+    }
+
+    .checkbox-label span {
+        font-size: 13px;
+    }
+
+    .privacy-text {
+        margin-left: 0;
+        font-size: 11px;
     }
 }
 
@@ -971,6 +999,28 @@ footer {
         50% {
             box-shadow: 0 8px 20px rgba(251, 191, 36, 0.7), 0 0 35px rgba(251, 191, 36, 0.6);
         }
+    }
+
+    .checkbox-group {
+        background: linear-gradient(135deg, #78350f, #92400e);
+        border-color: #b45309;
+    }
+
+    .checkbox-label span {
+        color: var(--text-primary);
+    }
+
+    .privacy-text {
+        color: #fef3c7;
+    }
+
+    .modal-content {
+        background: var(--card-bg);
+    }
+
+    .modal-close {
+        background: #1e293b;
+        color: var(--text-primary);
     }
 }
 
