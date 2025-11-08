@@ -162,22 +162,6 @@
                     </div>
                 </div>
 
-                <!-- 사주번호 카드 갤러리 -->
-                <div id="cardGallerySection" class="result-card hidden">
-                    <h2>🎴 나의 사주 카드</h2>
-                    <p class="card-gallery-intro">카드를 탭하면 뒤집어집니다. 좌우로 스와이프하여 다른 카드를 확인하세요.</p>
-                    <div class="card-gallery-container">
-                        <button class="gallery-nav gallery-nav-prev" id="cardPrev" aria-label="이전 카드">‹</button>
-                        <div class="card-gallery" id="cardGallery">
-                            <!-- 카드들이 동적으로 추가됩니다 -->
-                        </div>
-                        <button class="gallery-nav gallery-nav-next" id="cardNext" aria-label="다음 카드">›</button>
-                    </div>
-                    <div class="card-indicators" id="cardIndicators">
-                        <!-- 인디케이터가 동적으로 추가됩니다 -->
-                    </div>
-                </div>
-
                 <!-- 매칭 정보 (양력 기준) -->
                 <div id="matchingSection" class="result-card hidden">
                     <h2>나와 잘 맞는 정보</h2>
@@ -225,6 +209,25 @@
                     <div id="zodiacSection" class="matching-item hidden">
                         <h3>띠별 타로 번호</h3>
                         <p id="zodiacInfo"></p>
+                    </div>
+                </div>
+
+                <!-- 사주번호 카드 갤러리 (전체) -->
+                <div id="cardGallerySection" class="result-card hidden">
+                    <h2>🎴 사주 카드 전체 보기</h2>
+                    <p class="card-gallery-intro">카드를 탭하면 뒤집어집니다. 좌우로 스와이프하여 각 번호의 카드를 확인하세요.</p>
+                    <div class="card-gallery-container">
+                        <button class="gallery-nav gallery-nav-prev" id="cardPrev" aria-label="이전 카드">‹</button>
+                        <div class="card-gallery" id="cardGallery">
+                            <!-- 카드들이 동적으로 추가됩니다 -->
+                        </div>
+                        <button class="gallery-nav gallery-nav-next" id="cardNext" aria-label="다음 카드">›</button>
+                    </div>
+                    <div class="card-indicators" id="cardIndicators">
+                        <!-- 인디케이터가 동적으로 추가됩니다 -->
+                    </div>
+                    <div class="card-number-label">
+                        <span id="currentCardNumber">0</span> / 21
                     </div>
                 </div>
 

@@ -138,14 +138,20 @@ function renderHaeunInfo(type, haeunObj) {
     document.getElementById(`${type}HaeunSection`).classList.remove('hidden');
 }
 
-// 카드 갤러리 렌더링
+// 카드 갤러리 렌더링 (모든 카드 0-21)
 let currentCardIndex = 0;
 let cardGalleryNumbers = [];
+let isCardGalleryInitialized = false;
 
-function renderCardGallery(sajuNumbers) {
-    if (!sajuNumbers || sajuNumbers.length === 0) return;
+function renderCardGallery() {
+    // 한 번만 초기화
+    if (isCardGalleryInitialized) {
+        cardGallerySection.classList.remove('hidden');
+        return;
+    }
 
-    cardGalleryNumbers = [...new Set(sajuNumbers)]; // 중복 제거
+    // 0부터 21까지 모든 카드
+    cardGalleryNumbers = Array.from({ length: 22 }, (_, i) => i);
     const cardGallery = document.getElementById('cardGallery');
     const cardIndicators = document.getElementById('cardIndicators');
 
@@ -162,10 +168,10 @@ function renderCardGallery(sajuNumbers) {
 
         card.innerHTML = `
             <div class="card-face card-front">
-                <img src="public/인생보감개운법카드-${paddedNum}_앞.png" alt="사주 카드 ${num}번 앞면" loading="lazy">
+                <img src="./public/인생보감개운법카드-${paddedNum}_앞.png" alt="사주 카드 ${num}번 앞면" loading="lazy">
             </div>
             <div class="card-face card-back">
-                <img src="public/인생보감개운법카드-${paddedNum}_뒤.png" alt="사주 카드 ${num}번 뒷면" loading="lazy">
+                <img src="./public/인생보감개운법카드-${paddedNum}_뒤.png" alt="사주 카드 ${num}번 뒷면" loading="lazy">
             </div>
         `;
 
@@ -180,6 +186,7 @@ function renderCardGallery(sajuNumbers) {
         const indicator = document.createElement('div');
         indicator.className = `indicator ${index === 0 ? 'active' : ''}`;
         indicator.dataset.index = index;
+        indicator.title = `${num}번 카드`;
         indicator.addEventListener('click', () => {
             goToCard(index);
         });
@@ -187,12 +194,24 @@ function renderCardGallery(sajuNumbers) {
     });
 
     // 네비게이션 버튼 이벤트
-    setupCardNavigation();
+    if (!isCardGalleryInitialized) {
+        setupCardNavigation();
+        setupSwipeGesture();
+    }
 
-    // 스와이프 제스처 추가
-    setupSwipeGesture();
+    // 현재 카드 번호 업데이트
+    updateCardNumberLabel();
 
+    isCardGalleryInitialized = true;
     cardGallerySection.classList.remove('hidden');
+}
+
+function updateCardNumberLabel() {
+    const currentNumber = cardGalleryNumbers[currentCardIndex];
+    const label = document.getElementById('currentCardNumber');
+    if (label) {
+        label.textContent = currentNumber;
+    }
 }
 
 function goToCard(index) {
@@ -212,6 +231,9 @@ function goToCard(index) {
 
     // 플립 상태 초기화
     cards[currentCardIndex].classList.remove('flipped');
+
+    // 카드 번호 라벨 업데이트
+    updateCardNumberLabel();
 }
 
 function setupCardNavigation() {
@@ -547,11 +569,11 @@ form.addEventListener('submit', (e) => {
     if (allSajuNumbers.length > 0) {
         const birthYear = solarParsed ? solarParsed.y : (lunarParsed ? lunarParsed.y : null);
 
-        // 카드 갤러리 렌더링
-        renderCardGallery(allSajuNumbers);
-
         // 매칭 정보 렌더링
         renderMatchingInfo(allSajuNumbers, birthYear);
+
+        // 카드 갤러리 렌더링 (모든 카드 0-21)
+        renderCardGallery();
     }
 
     // 결과 표시

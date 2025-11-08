@@ -649,6 +649,24 @@ footer {
     flex-wrap: wrap;
 }
 
+.card-number-label {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-top: 16px;
+    padding: 12px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-radius: 12px;
+    border: 2px solid #bae6fd;
+}
+
+.card-number-label #currentCardNumber {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--secondary-color);
+}
+
 .indicator {
     width: 8px;
     height: 8px;
@@ -885,6 +903,16 @@ footer {
 
     .card-gallery {
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-number-label {
+        background: linear-gradient(135deg, #0c4a6e, #075985);
+        border-color: #0369a1;
+        color: #bae6fd;
+    }
+
+    .card-number-label #currentCardNumber {
+        color: #7dd3fc;
     }
 }
 
