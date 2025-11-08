@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="수비학 운세 사주번호 계산기 - 나와 잘 맞는 장소, 번호, 지형 찾기">
+    <title>사주번호 운세 계산기</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>사주번호 운세 계산기</h1>
+            <p class="subtitle">나와 잘 맞는 장소와 번호를 찾아보세요</p>
+        </header>
+
+        <main>
+            <!-- 입력 폼 -->
+            <section class="input-section">
+                <div class="intro-box">
+                    <h3>🔮 운세 계산 방법</h3>
+                    <ul>
+                        <li><strong>사주번호</strong>: 생년월일 기반 평생 운명수 (비중 <span class="badge">80%</span>)</li>
+                        <li><strong>이름 번호</strong>: 각 글자의 운명수 (비중 <span class="badge">20%</span>)</li>
+                        <li><strong>해운번호</strong>: 매년 변하는 올해 운세 번호</li>
+                    </ul>
+                </div>
+
+                <form id="calc-form">
+                    <div class="form-group">
+                        <label for="name">이름</label>
+                        <input type="text" id="name" placeholder="이름을 입력하세요 (선택)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="solarYmd">생년월일 (양력)</label>
+                        <input type="text" id="solarYmd" placeholder="예: 19900101" maxlength="8" inputmode="numeric">
+                        <small>8자리 숫자 (YYYYMMDD)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lunarYmd">생년월일 (음력)</label>
+                        <input type="text" id="lunarYmd" placeholder="예: 19900101" maxlength="8" inputmode="numeric">
+                        <small>8자리 숫자 (YYYYMMDD)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="refYear">기준연도</label>
+                        <input type="number" id="refYear" value="2025" min="2000" max="2099">
+                        <small>해운번호 계산 기준</small>
+                    </div>
+
+                    <button type="submit" class="btn-primary">운세 보기</button>
+                </form>
+            </section>
+
+            <!-- 빈 상태 -->
+            <section id="emptyState" class="empty-state">
+                <div class="empty-icon">🔮</div>
+                <p>생년월일을 입력하고<br>나만의 운세를 확인해보세요</p>
+            </section>
+
+            <!-- 결과 화면 -->
+            <section id="results" class="results hidden">
+                <!-- 이름 사주 값 -->
+                <div id="nameSection" class="result-card hidden">
+                    <h2>이름 사주번호</h2>
+                    <div class="info-box">
+                        <div class="info-icon">📝</div>
+                        <div class="info-content">
+                            <strong>이름의 운명수</strong>
+                            <p>각 글자에 맞는 운명수로 평생 변하지 않는 번호입니다. 전체 운세의 <strong>20%</strong>를 차지하며, 이름이 가진 에너지와 특성을 나타냅니다.</p>
+                        </div>
+                    </div>
+                    <div id="nameSajuValues" class="pill-container"></div>
+                    <div id="nameMeaningList" class="meaning-list"></div>
+                </div>
+
+                <!-- 양력 사주 -->
+                <div id="solarSajuSection" class="result-card hidden">
+                    <h2>사주번호 (양력)</h2>
+                    <div class="info-box">
+                        <div class="info-icon">⭐</div>
+                        <div class="info-content">
+                            <strong>나의 운명수</strong>
+                            <p>생년월일로 계산되는 평생 변하지 않는 운명 번호입니다. 전체 운세의 <strong>80%</strong>를 차지하며, 당신의 본질적인 성향과 인생의 방향을 나타냅니다.</p>
+                        </div>
+                    </div>
+                    <div class="number-display">
+                        <span id="sajuFirstSolar" class="big-number">-</span>
+                        <span class="plus">+</span>
+                        <span id="sajuSecondSolar" class="big-number">-</span>
+                    </div>
+                    <p id="sajuDescSolar" class="desc"></p>
+                    <div class="meaning-box">
+                        <p id="sajuMeaningSolar" class="meaning"></p>
+                        <p id="sajuMeaningSolar2" class="meaning"></p>
+                    </div>
+                </div>
+
+                <!-- 음력 사주 -->
+                <div id="lunarSajuSection" class="result-card hidden">
+                    <h2>사주번호 (음력)</h2>
+                    <div class="info-box">
+                        <div class="info-icon">⭐</div>
+                        <div class="info-content">
+                            <strong>나의 운명수</strong>
+                            <p>생년월일로 계산되는 평생 변하지 않는 운명 번호입니다. 전체 운세의 <strong>80%</strong>를 차지하며, 당신의 본질적인 성향과 인생의 방향을 나타냅니다.</p>
+                        </div>
+                    </div>
+                    <div class="number-display">
+                        <span id="sajuFirstLunar" class="big-number">-</span>
+                        <span class="plus">+</span>
+                        <span id="sajuSecondLunar" class="big-number">-</span>
+                    </div>
+                    <p id="sajuDescLunar" class="desc"></p>
+                    <div class="meaning-box">
+                        <p id="sajuMeaningLunar" class="meaning"></p>
+                        <p id="sajuMeaningLunar2" class="meaning"></p>
+                    </div>
+                </div>
+
+                <!-- 양력 해운 -->
+                <div id="solarHaeunSection" class="result-card hidden">
+                    <h2>해운번호 (양력)</h2>
+                    <div class="info-box info-box-yearly">
+                        <div class="info-icon">🔮</div>
+                        <div class="info-content">
+                            <strong>올해의 운세 번호</strong>
+                            <p>매년 운세를 나타내는 번호로 <strong>매년 변합니다</strong>. 각 번호 조합마다 점수와 해석이 다르며, 올해 당신이 겪을 상황과 주의사항을 알려줍니다.</p>
+                        </div>
+                    </div>
+                    <div class="number-display">
+                        <span id="haeunFirstSolar" class="big-number">-</span>
+                        <span class="plus">/</span>
+                        <span id="haeunSecondSolar" class="big-number">-</span>
+                    </div>
+                    <p id="haeunDescSolar" class="desc"></p>
+                    <div class="meaning-box">
+                        <p id="haeunMeaningSolar" class="meaning"></p>
+                    </div>
+                </div>
+
+                <!-- 음력 해운 -->
+                <div id="lunarHaeunSection" class="result-card hidden">
+                    <h2>해운번호 (음력)</h2>
+                    <div class="info-box info-box-yearly">
+                        <div class="info-icon">🔮</div>
+                        <div class="info-content">
+                            <strong>올해의 운세 번호</strong>
+                            <p>매년 운세를 나타내는 번호로 <strong>매년 변합니다</strong>. 각 번호 조합마다 점수와 해석이 다르며, 올해 당신이 겪을 상황과 주의사항을 알려줍니다.</p>
+                        </div>
+                    </div>
+                    <div class="number-display">
+                        <span id="haeunFirstLunar" class="big-number">-</span>
+                        <span class="plus">/</span>
+                        <span id="haeunSecondLunar" class="big-number">-</span>
+                    </div>
+                    <p id="haeunDescLunar" class="desc"></p>
+                    <div class="meaning-box">
+                        <p id="haeunMeaningLunar" class="meaning"></p>
+                    </div>
+                </div>
+
+                <!-- 사주번호 카드 갤러리 -->
+                <div id="cardGallerySection" class="result-card hidden">
+                    <h2>🎴 나의 사주 카드</h2>
+                    <p class="card-gallery-intro">카드를 탭하면 뒤집어집니다. 좌우로 스와이프하여 다른 카드를 확인하세요.</p>
+                    <div class="card-gallery-container">
+                        <button class="gallery-nav gallery-nav-prev" id="cardPrev" aria-label="이전 카드">‹</button>
+                        <div class="card-gallery" id="cardGallery">
+                            <!-- 카드들이 동적으로 추가됩니다 -->
+                        </div>
+                        <button class="gallery-nav gallery-nav-next" id="cardNext" aria-label="다음 카드">›</button>
+                    </div>
+                    <div class="card-indicators" id="cardIndicators">
+                        <!-- 인디케이터가 동적으로 추가됩니다 -->
+                    </div>
+                </div>
+
+                <!-- 매칭 정보 (양력 기준) -->
+                <div id="matchingSection" class="result-card hidden">
+                    <h2>나와 잘 맞는 정보</h2>
+
+                    <div class="matching-item">
+                        <h3>행운의 숫자</h3>
+                        <div id="luckyNumbers" class="pill-container"></div>
+                    </div>
+
+                    <div class="matching-item">
+                        <h3>지양할 숫자</h3>
+                        <div id="avoidNumbers" class="pill-container"></div>
+                    </div>
+
+                    <div class="matching-item">
+                        <h3>좋은 지역 (초성)</h3>
+                        <div id="consonants" class="pill-container"></div>
+                    </div>
+
+                    <div class="matching-item">
+                        <h3>추천 지형</h3>
+                        <p id="terrain" class="terrain-text"></p>
+                    </div>
+
+                    <div class="matching-item">
+                        <h3>추천 지역 예시</h3>
+                        <div id="locations" class="pill-container"></div>
+                    </div>
+
+                    <div class="matching-item">
+                        <h3>잘 맞는 사주번호</h3>
+                        <div id="compatible" class="pill-container"></div>
+                    </div>
+
+                    <div id="specialNotes" class="matching-item hidden">
+                        <h3>특별한 특징</h3>
+                        <p id="specialText" class="special-text"></p>
+                    </div>
+
+                    <div id="specialCombinationsSection" class="matching-item hidden">
+                        <h3>특수 사주 조합</h3>
+                        <div id="specialCombinations" class="special-combinations"></div>
+                    </div>
+
+                    <div id="zodiacSection" class="matching-item hidden">
+                        <h3>띠별 타로 번호</h3>
+                        <p id="zodiacInfo"></p>
+                    </div>
+                </div>
+
+                <!-- 액션 버튼 -->
+                <div class="action-buttons">
+                    <button id="copyBtn" class="btn-secondary">결과 복사</button>
+                    <button id="shareBtn" class="btn-secondary">공유하기</button>
+                    <button id="resetBtn" class="btn-secondary">다시하기</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>수비학 기반 운세 참고용 정보입니다</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="sajuMatching.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
