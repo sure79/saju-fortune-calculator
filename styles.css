@@ -409,11 +409,51 @@ main {
 /* 중복 강조 */
 .pill.duplicate {
     font-weight: 900;
-    font-size: 15px;
-    padding: 10px 18px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.5);
+    font-size: 16px;
+    padding: 12px 20px;
+    box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4), 0 0 20px rgba(255, 215, 0, 0.3);
+    border: 3px solid #ffd700;
     cursor: help;
+    position: relative;
+    animation: duplicatePulse 2s ease-in-out infinite;
+    transform: scale(1.05);
+}
+
+.pill.duplicate::before {
+    content: '⭐ ';
+    font-size: 14px;
+}
+
+.pill.duplicate::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    background: #ffd700;
+    border-radius: 50%;
+    animation: sparkle 1.5s ease-in-out infinite;
+}
+
+@keyframes duplicatePulse {
+    0%, 100% {
+        box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4), 0 0 20px rgba(255, 215, 0, 0.3);
+    }
+    50% {
+        box-shadow: 0 8px 20px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.5);
+    }
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.3);
+    }
 }
 
 /* Matching Section */
@@ -913,6 +953,24 @@ footer {
 
     .card-number-label #currentCardNumber {
         color: #7dd3fc;
+    }
+
+    .pill.duplicate {
+        border-color: #fbbf24;
+        box-shadow: 0 6px 16px rgba(251, 191, 36, 0.5), 0 0 25px rgba(251, 191, 36, 0.4);
+    }
+
+    .pill.duplicate::after {
+        background: #fbbf24;
+    }
+
+    @keyframes duplicatePulse {
+        0%, 100% {
+            box-shadow: 0 6px 16px rgba(251, 191, 36, 0.5), 0 0 25px rgba(251, 191, 36, 0.4);
+        }
+        50% {
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.7), 0 0 35px rgba(251, 191, 36, 0.6);
+        }
     }
 }
 

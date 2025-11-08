@@ -353,28 +353,38 @@ function renderMatchingInfo(sajuNumbers, birthYear) {
         const luckyContainer = document.getElementById('luckyNumbers');
         luckyContainer.innerHTML = '';
 
-        // 자신의 사주번호들
-        sajuNumbersList.forEach(num => {
-            const myPill = document.createElement('span');
-            myPill.className = 'pill fortune';
-            myPill.textContent = num;
-            luckyContainer.appendChild(myPill);
-        });
+        // 행운의 숫자 모음 (자신의 사주번호 + 행운의 숫자들)
+        const allFortuneNumbers = [...sajuNumbersList, ...matchInfo.luckyInfo.fortuneNumbers];
+        const avoidNumbersSet = new Set(matchInfo.luckyInfo.avoidNumbers);
 
-        // 행운의 숫자들
-        matchInfo.luckyInfo.fortuneNumbers.forEach(num => {
+        // 지양할 숫자와 겹치지 않는 행운의 숫자만 표시
+        const uniqueFortuneNumbers = [...new Set(allFortuneNumbers)]
+            .filter(num => !avoidNumbersSet.has(num));
+
+        uniqueFortuneNumbers.forEach(num => {
             const pill = document.createElement('span');
-            pill.className = 'pill fortune';
+            const isMyNumber = sajuNumbersList.includes(num);
+            pill.className = isMyNumber ? 'pill fortune my-number' : 'pill fortune';
             pill.textContent = num;
+            if (isMyNumber) {
+                pill.title = '내 사주번호';
+            }
             luckyContainer.appendChild(pill);
         });
     }
 
-    // 지양할 숫자
+    // 지양할 숫자 (행운의 숫자와 겹치지 않는 것만)
     if (matchInfo.luckyInfo) {
         const avoidContainer = document.getElementById('avoidNumbers');
         avoidContainer.innerHTML = '';
-        matchInfo.luckyInfo.avoidNumbers.forEach(num => {
+
+        const fortuneNumbersSet = new Set([...sajuNumbersList, ...matchInfo.luckyInfo.fortuneNumbers]);
+
+        // 행운의 숫자와 겹치지 않는 지양할 숫자만 표시
+        const uniqueAvoidNumbers = matchInfo.luckyInfo.avoidNumbers
+            .filter(num => !fortuneNumbersSet.has(num));
+
+        uniqueAvoidNumbers.forEach(num => {
             const pill = document.createElement('span');
             pill.className = 'pill avoid';
             pill.textContent = num;
