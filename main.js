@@ -161,17 +161,18 @@ function renderCardGallery() {
 
     // 카드 생성
     cardGalleryNumbers.forEach((num, index) => {
-        const paddedNum = String(num).padStart(2, '0');
+        // 0번은 패딩 없이, 1-21번은 01-21로 패딩
+        const paddedNum = num === 0 ? '0' : String(num).padStart(2, '0');
         const card = document.createElement('div');
         card.className = `saju-card ${index === 0 ? 'active' : ''}`;
         card.dataset.index = index;
 
         card.innerHTML = `
             <div class="card-face card-front">
-                <img src="./public/인생보감개운법카드-${paddedNum}_앞.png" alt="사주 카드 ${num}번 앞면" loading="lazy">
+                <img src="/인생보감개운법카드-${paddedNum}_앞.png" alt="사주 카드 ${num}번 앞면" loading="lazy">
             </div>
             <div class="card-face card-back">
-                <img src="./public/인생보감개운법카드-${paddedNum}_뒤.png" alt="사주 카드 ${num}번 뒷면" loading="lazy">
+                <img src="/인생보감개운법카드-${paddedNum}_뒤.png" alt="사주 카드 ${num}번 뒷면" loading="lazy">
             </div>
         `;
 
