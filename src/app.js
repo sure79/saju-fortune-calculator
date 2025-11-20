@@ -9,17 +9,17 @@ function sumDigits(num) {
 function calcSajuValue(y, m, d) {
     if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
     const total = y + m + d;
-    
+
     // 생년월일 합이 2000인 경우 특별 예외 처리
     if (total === 2000) {
         return { total, firstVal: 20, secondVal: 2 };
     }
-    
+
     // 2000 초과인 경우 특별 처리
     if (total > 2000) {
         const lastTwoDigits = total % 100;
         let firstVal, secondVal;
-        
+
         if (lastTwoDigits <= 21) {
             // 21 이하면 두자리 그대로 사용
             firstVal = lastTwoDigits;
@@ -27,55 +27,55 @@ function calcSajuValue(y, m, d) {
             // 22 이상이면 마지막 한자리만 사용
             firstVal = lastTwoDigits % 10;
         }
-        
+
         // 0이 나올 경우 처리
         if (firstVal === 0) firstVal = 10;
-        
+
         // 두 번째 사주는 전체 자릿수 합
         secondVal = sumDigits(total);
         // 0이 나올 경우 처리
         if (secondVal === 0) secondVal = 22;
-        
+
         return { total, firstVal: firstVal, secondVal: secondVal };
     }
-    
+
     // 2000 미만인 경우 기존 로직
     // 앞 두자리와 뒤 두자리로 분리
     const frontTwo = Math.floor(total / 100);
     const backTwo = total % 100;
-    
+
     // 앞 두자리의 각 자리수 더하기
     const frontSum = sumDigits(frontTwo);
-    
+
     // 뒤 두자리의 각 자리수 더하기
     const backSum = sumDigits(backTwo);
-    
+
     // 2000 미만인 경우 특별 예외 처리
     const combinedString = String(frontSum) + String(backSum);
     const combinedNumber = parseInt(combinedString, 10);
-    
+
     if (combinedNumber === 1010) {
         return { total, firstVal: 10, secondVal: 2 };
     }
     if (combinedNumber === 1011) {
         return { total, firstVal: 11, secondVal: 3 };
     }
-    
+
     // 첫 번째 사주: 뒤 두자리의 합
     let fv = backSum;
     // 0이 나올 경우 22로 처리
     if (fv === 0) fv = 22;
-    
+
     // 두 번째 사주: 앞 두자리의 합 + 뒤 두자리의 합
     let sv = frontSum + backSum;
-    
+
     // 두 번째 사주가 21을 넘으면 각 자리수 더하기
     if (sv > 21) {
         sv = sumDigits(sv);
     }
     // 0이 나올 경우 22로 처리
     if (sv === 0) sv = 22;
-    
+
     return { total, firstVal: fv, secondVal: sv };
 }
 
@@ -87,11 +87,11 @@ function calcHaeunValue(refY, m, d) {
     let fv = (lastTwo > 21) ? (lastTwo % 10) : lastTwo;
     // 0이 나올 경우 10으로 처리
     if (fv === 0) fv = 10;
-    
+
     let sv = sumDigits(total);
     // 0이 나올 경우 22로 처리
     if (sv === 0) sv = 22;
-    
+
     return { total, firstVal: fv, secondVal: sv };
 }
 
@@ -482,6 +482,16 @@ if (resetBtn && form) {
 }
 */
 
-// UI 제어 코드는 모두 주석 처리됨
-// 이 파일은 계산 함수(calcSajuValue, calcHaeunValue, getNameNumbers 등)만 제공합니다.
+// Export functions
+export {
+    sumDigits,
+    calcSajuValue,
+    calcHaeunValue,
+    getNameNumbers,
+    getNameNumbersForPrompt,
+    formatResultText,
+    sajuMeanings,
+    haeunMeanings,
+    nameMap
+};
 

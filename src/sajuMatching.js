@@ -514,12 +514,10 @@ function generateRecommendation(compatibility, special) {
 }
 
 // ========================================
-// 7. Export (Node.js/브라우저 환경 모두 지원)
+// 7. Export (ES Modules)
 // ========================================
 
-if (typeof module !== 'undefined' && module.exports) {
-  // Node.js 환경
-  module.exports = {
+export {
     luckyNumbers,
     locationMatching,
     sajuCharacteristics,
@@ -531,10 +529,10 @@ if (typeof module !== 'undefined' && module.exports) {
     getZodiacByYear,
     getComprehensiveMatch,
     analyzeRelationship
-  };
-} else {
-  // 브라우저 환경
-  window.SajuMatching = {
+};
+
+// Default export for convenience if needed
+export default {
     luckyNumbers,
     locationMatching,
     sajuCharacteristics,
@@ -546,8 +544,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getZodiacByYear,
     getComprehensiveMatch,
     analyzeRelationship
-  };
-}
+};
 
 // ========================================
 // 8. 사용 예시

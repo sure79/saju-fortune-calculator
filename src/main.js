@@ -2,6 +2,17 @@
  * Main UI Controller
  * app.js와 sajuMatching.js를 연결하여 UI를 제어합니다
  */
+import {
+    getNameNumbers,
+    sajuMeanings,
+    haeunMeanings
+} from './app.js';
+import * as SajuMatching from './sajuMatching.js';
+import { analyzeSaju } from './sajuAnalyzer.js';
+import { marked } from 'marked';
+import { GeminiClient } from './gemini.js';
+
+
 
 // DOM Elements
 const form = document.getElementById('calc-form');
@@ -14,6 +25,91 @@ const emptyState = document.getElementById('emptyState');
 const copyBtn = document.getElementById('copyBtn');
 const shareBtn = document.getElementById('shareBtn');
 const resetBtn = document.getElementById('resetBtn');
+
+// New DOM Elements for AI Report
+const btnAiReport = document.getElementById('btnAiReport');
+const apiKeyModal = document.getElementById('apiKeyModal');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
+const apiKeyClose = document.getElementById('apiKeyClose');
+const reportModal = document.getElementById('reportModal');
+const reportContent = document.getElementById('reportContent');
+const reportClose = document.getElementById('reportClose');
+
+// ... (Existing code)
+
+// AI Report Logic
+let geminiClient = null;
+
+// Hardcoded key as fallback/default
+const DEFAULT_KEY = 'AIzaSyCqamZjyNPC5aq2VtefkOK53FnuGh_MffI';
+
+function getApiKey() {
+    return localStorage.getItem('gemini_api_key') || DEFAULT_KEY;
+}
+
+function setApiKey(key) {
+    localStorage.setItem('gemini_api_key', key);
+    geminiClient = new GeminiClient(key);
+}
+
+function initGemini() {
+    const key = getApiKey();
+    if (key) {
+        geminiClient = new GeminiClient(key);
+    }
+}
+
+initGemini();
+
+// API Key Modal Events
+function openApiKeyModal() {
+    apiKeyModal.classList.remove('hidden');
+    apiKeyInput.value = getApiKey() || '';
+    apiKeyInput.focus();
+}
+
+function closeApiKeyModal() {
+    apiKeyModal.classList.add('hidden');
+}
+
+apiKeyClose.addEventListener('click', closeApiKeyModal);
+document.getElementById('apiKeyOverlay').addEventListener('click', closeApiKeyModal);
+
+saveApiKeyBtn.addEventListener('click', () => {
+    const key = apiKeyInput.value.trim();
+    if (key) {
+        setApiKey(key);
+        closeApiKeyModal();
+        generateAiReport(); // Retry generation
+    } else {
+        alert('API Key를 입력해주세요.');
+    }
+});
+
+// Report Modal Events
+function openReportModal() {
+    reportModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeReportModal() {
+    reportModal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+reportClose.addEventListener('click', closeReportModal);
+document.getElementById('reportOverlay').addEventListener('click', closeReportModal);
+
+// Generate Report
+// Generate Report
+async function generateAiReport() {
+    alert("상세 운세 보고서는 추후 개발 예정입니다.");
+}
+
+btnAiReport.addEventListener('click', generateAiReport);
+
+// ... (Rest of the code)
 
 // Section Elements
 const nameSection = document.getElementById('nameSection');
@@ -71,11 +167,11 @@ function renderNameChips(name) {
 }
 
 // 사주 정보 렌더링
-function renderSajuInfo(type, sajuObj) {
+function renderSajuInfo(type, sajuData) {
     const prefix = type === 'solar' ? 'Solar' : 'Lunar';
     const calendarType = type === 'solar' ? '양력' : '음력';
 
-    if (!sajuObj) {
+    if (!sajuData) {
         document.getElementById(`sajuFirst${prefix}`).textContent = '-';
         document.getElementById(`sajuSecond${prefix}`).textContent = '-';
         document.getElementById(`sajuDesc${prefix}`).textContent = '';
@@ -85,33 +181,55 @@ function renderSajuInfo(type, sajuObj) {
         return;
     }
 
-    document.getElementById(`sajuFirst${prefix}`).textContent = sajuObj.firstVal;
-    document.getElementById(`sajuSecond${prefix}`).textContent = sajuObj.secondVal;
+    const { primary, secondary } = sajuData;
+
+    document.getElementById(`sajuFirst${prefix}`).textContent = primary.number;
+    document.getElementById(`sajuSecond${prefix}`).textContent = secondary.number;
     document.getElementById(`sajuDesc${prefix}`).textContent =
-        `${calendarType} 합 ${sajuObj.total} → 첫값 ${sajuObj.firstVal}, 둘째값 ${sajuObj.secondVal}`;
+        `${calendarType} 사주: ${primary.number}번 / ${secondary.number}번`;
 
-    const meaning1 = sajuMeanings[sajuObj.firstVal];
-    const meaning2 = sajuMeanings[sajuObj.secondVal];
-
-    if (meaning1) {
-        document.getElementById(`sajuMeaning${prefix}`).textContent =
-            `${meaning1.emoji} ${meaning1.title}: ${meaning1.text}`;
+    // 첫 번째 사주 의미
+    if (primary.info) {
+        const title = primary.info.title || `${primary.number}번`;
+        const summary = primary.info.content?.general?.split('\n')[0] || ''; // 첫 줄만 표시
+        document.getElementById(`sajuMeaning${prefix}`).textContent = `${title}: ${summary}`;
     }
 
-    const second = document.getElementById(`sajuMeaning${prefix}2`);
-    if (second && meaning2) {
-        second.textContent = `${meaning2.emoji} ${meaning2.title}: ${meaning2.text}`;
+    // 두 번째 사주 의미
+    const secondEl = document.getElementById(`sajuMeaning${prefix}2`);
+    if (secondEl && secondary.info) {
+        const title = secondary.info.title || `${secondary.number}번`;
+        const summary = secondary.info.content?.general?.split('\n')[0] || '';
+        secondEl.textContent = `${title}: ${summary}`;
     }
 
-    document.getElementById(`${type}SajuSection`).classList.remove('hidden');
+    // 상세 보기 버튼 추가 (기존 버튼이 있다면 제거 후 추가)
+    const container = document.getElementById(`${type}SajuSection`);
+    let detailBtn = container.querySelector('.detail-btn');
+    if (!detailBtn) {
+        detailBtn = document.createElement('button');
+        detailBtn.className = 'detail-btn mt-2 text-sm text-indigo-600 hover:text-indigo-800 underline';
+        detailBtn.textContent = '📜 상세 풀이 보기';
+        container.appendChild(detailBtn);
+    }
+
+    // 버튼 이벤트 리스너 새로 등록 (클로저 문제 해결 위해)
+    const newBtn = detailBtn.cloneNode(true);
+    detailBtn.parentNode.replaceChild(newBtn, detailBtn);
+
+    newBtn.addEventListener('click', () => {
+        showDetailedReport(sajuData, type === 'solar' ? '양력 사주 풀이' : '음력 사주 풀이');
+    });
+
+    container.classList.remove('hidden');
 }
 
 // 해운 정보 렌더링
-function renderHaeunInfo(type, haeunObj) {
+function renderHaeunInfo(type, haeunData) {
     const prefix = type === 'solar' ? 'Solar' : 'Lunar';
     const calendarType = type === 'solar' ? '양력' : '음력';
 
-    if (!haeunObj) {
+    if (!haeunData) {
         document.getElementById(`haeunFirst${prefix}`).textContent = '-';
         document.getElementById(`haeunSecond${prefix}`).textContent = '-';
         document.getElementById(`haeunDesc${prefix}`).textContent = '';
@@ -119,23 +237,39 @@ function renderHaeunInfo(type, haeunObj) {
         return;
     }
 
-    document.getElementById(`haeunFirst${prefix}`).textContent = haeunObj.firstVal;
-    document.getElementById(`haeunSecond${prefix}`).textContent = haeunObj.secondVal;
+    const { number, info } = haeunData;
+    const [first, second] = number.split('/');
+
+    document.getElementById(`haeunFirst${prefix}`).textContent = first;
+    document.getElementById(`haeunSecond${prefix}`).textContent = second;
     document.getElementById(`haeunDesc${prefix}`).textContent =
-        `기준연도 합 ${haeunObj.total} → 첫값 ${haeunObj.firstVal}, 둘째값 ${haeunObj.secondVal}`;
+        `${calendarType} 해운: ${number}`;
 
-    const haeunKey = `${haeunObj.firstVal}/${haeunObj.secondVal}`;
-    const haeunMeaning = haeunMeanings[haeunKey];
-
-    if (haeunMeaning) {
-        document.getElementById(`haeunMeaning${prefix}`).textContent =
-            `점수 ${haeunMeaning.score}점 ${haeunMeaning.star} · ${haeunMeaning.text}`;
+    if (info && info.content) {
+        const summary = info.content.general || info.content.summary || '상세 정보가 없습니다.';
+        document.getElementById(`haeunMeaning${prefix}`).textContent = summary.split('\n')[0];
     } else {
-        document.getElementById(`haeunMeaning${prefix}`).textContent =
-            '해당 조합의 해운 정보가 없습니다.';
+        document.getElementById(`haeunMeaning${prefix}`).textContent = '해당 해운 번호에 대한 상세 정보가 없습니다.';
     }
 
-    document.getElementById(`${type}HaeunSection`).classList.remove('hidden');
+    // 상세 보기 버튼
+    const container = document.getElementById(`${type}HaeunSection`);
+    let detailBtn = container.querySelector('.detail-btn');
+    if (!detailBtn) {
+        detailBtn = document.createElement('button');
+        detailBtn.className = 'detail-btn mt-2 text-sm text-indigo-600 hover:text-indigo-800 underline';
+        detailBtn.textContent = '🌊 해운 상세 풀이 보기';
+        container.appendChild(detailBtn);
+    }
+
+    const newBtn = detailBtn.cloneNode(true);
+    detailBtn.parentNode.replaceChild(newBtn, detailBtn);
+
+    newBtn.addEventListener('click', () => {
+        showDetailedHaeunReport(haeunData, type === 'solar' ? '양력 해운 풀이' : '음력 해운 풀이');
+    });
+
+    container.classList.remove('hidden');
 }
 
 // 카드 갤러리 렌더링 (그리드 방식)
@@ -161,8 +295,8 @@ function renderCardGallery() {
         gridItem.dataset.number = num;
 
         gridItem.innerHTML = `
-            <img src="/${frontPath}" alt="사주 카드 ${num}번" loading="lazy">
-        `;
+        <img src="/${frontPath}" alt="사주 카드 ${num}번" loading="lazy">
+    `;
 
         // 클릭 시 모달 열기
         gridItem.addEventListener('click', () => {
@@ -422,9 +556,9 @@ function renderMatchingInfo(sajuNumbers, birthYear) {
             const item = document.createElement('div');
             item.className = 'special-combo-item';
             item.innerHTML = `
-                <strong>${combo.numbers}</strong>: ${combo.category.replace(/_/g, ' ')}
-                <p>${combo.description}</p>
-            `;
+            <strong>${combo.numbers}</strong>: ${combo.category.replace(/_/g, ' ')}
+            <p>${combo.description}</p>
+        `;
             specialContainer.appendChild(item);
         });
         document.getElementById('specialCombinationsSection').classList.remove('hidden');
@@ -444,6 +578,61 @@ function renderMatchingInfo(sajuNumbers, birthYear) {
     }
 
     matchingSection.classList.remove('hidden');
+}
+
+// 상세 보고서 표시 함수 (사주)
+function showDetailedReport(sajuData, title) {
+    const { primary, secondary } = sajuData;
+    let content = `# ${title}\n\n`;
+
+    // Primary
+    content += `## 1. ${primary.info.title || primary.number + '번'}\n`;
+    if (primary.info.content) {
+        for (const [key, val] of Object.entries(primary.info.content)) {
+            content += `### ${key}\n${val}\n\n`;
+        }
+    }
+
+    content += `\n---\n\n`;
+
+    // Secondary
+    content += `## 2. ${secondary.info.title || secondary.number + '번'}\n`;
+    if (secondary.info.content) {
+        for (const [key, val] of Object.entries(secondary.info.content)) {
+            content += `### ${key}\n${val}\n\n`;
+        }
+    }
+
+    reportContent.innerHTML = marked.parse(content);
+    openReportModal();
+}
+
+// 상세 보고서 표시 함수 (해운)
+function showDetailedHaeunReport(haeunData, title) {
+    const { number, info } = haeunData;
+    let content = `# ${title} (${number})\n\n`;
+
+    if (info.title) content += `## ${info.title}\n\n`;
+
+    if (info.content) {
+        for (const [key, val] of Object.entries(info.content)) {
+            let sectionTitle = key;
+            if (key === 'general') sectionTitle = '전반적 특징';
+            else if (key === 'wealth') sectionTitle = '재물운';
+            else if (key === 'love') sectionTitle = '애정운';
+            else if (key === 'job') sectionTitle = '직장운';
+            else if (key === 'health') sectionTitle = '건강운';
+            else if (key === 'todo') sectionTitle = '오늘 시도해보기';
+            else if (key === 'caution') sectionTitle = '오늘 조심할 점';
+
+            content += `### ${sectionTitle}\n${val}\n\n`;
+        }
+    } else {
+        content += '상세 정보가 없습니다.';
+    }
+
+    reportContent.innerHTML = marked.parse(content);
+    openReportModal();
 }
 
 // 폼 제출 이벤트
@@ -479,32 +668,31 @@ form.addEventListener('submit', (e) => {
     }
 
     // 양력 계산
-    let sajuSolar = null;
-    let haeunSolar = null;
+    let resultSolar = null;
     if (solarParsed) {
-        sajuSolar = calcSajuValue(solarParsed.y, solarParsed.m, solarParsed.d);
-        haeunSolar = calcHaeunValue(refY, solarParsed.m, solarParsed.d);
-        renderSajuInfo('solar', sajuSolar);
-        renderHaeunInfo('solar', haeunSolar);
+        // YYYY-MM-DD 형식으로 변환
+        const dateStr = `${solarParsed.y}-${String(solarParsed.m).padStart(2, '0')}-${String(solarParsed.d).padStart(2, '0')}`;
+        resultSolar = analyzeSaju(name, dateStr);
+        renderSajuInfo('solar', resultSolar.saju);
+        renderHaeunInfo('solar', resultSolar.haewoon);
     }
 
     // 음력 계산
-    let sajuLunar = null;
-    let haeunLunar = null;
+    let resultLunar = null;
     if (lunarParsed) {
-        sajuLunar = calcSajuValue(lunarParsed.y, lunarParsed.m, lunarParsed.d);
-        haeunLunar = calcHaeunValue(refY, lunarParsed.m, lunarParsed.d);
-        renderSajuInfo('lunar', sajuLunar);
-        renderHaeunInfo('lunar', haeunLunar);
+        const dateStr = `${lunarParsed.y}-${String(lunarParsed.m).padStart(2, '0')}-${String(lunarParsed.d).padStart(2, '0')}`;
+        resultLunar = analyzeSaju(name, dateStr);
+        renderSajuInfo('lunar', resultLunar.saju);
+        renderHaeunInfo('lunar', resultLunar.haewoon);
     }
 
     // 매칭 정보 표시 (4개 사주번호 모두 사용)
     const allSajuNumbers = [];
-    if (sajuSolar) {
-        allSajuNumbers.push(sajuSolar.firstVal, sajuSolar.secondVal);
+    if (resultSolar) {
+        allSajuNumbers.push(resultSolar.saju.primary.number, resultSolar.saju.secondary.number);
     }
-    if (sajuLunar) {
-        allSajuNumbers.push(sajuLunar.firstVal, sajuLunar.secondVal);
+    if (resultLunar) {
+        allSajuNumbers.push(resultLunar.saju.primary.number, resultLunar.saju.secondary.number);
     }
 
     if (allSajuNumbers.length > 0) {
