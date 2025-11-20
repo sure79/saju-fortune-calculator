@@ -110,6 +110,11 @@ function calculateHaewoonNumber(month, day) {
         num1 = lastTwo;
     }
 
+    // Special case: if num1 is 10, convert to 0 (per user requirement)
+    if (num1 === 10) {
+        num1 = 0;
+    }
+
     // 2. Sum of all digits
     let tempSum = sum;
     let digitSum = 0;
